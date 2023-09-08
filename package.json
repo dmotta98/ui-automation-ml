@@ -16,6 +16,8 @@
         "wdio": "wdio run wdio.conf.js"
     },
     "dependencies": {
-        "xlsx": "^0.18.5"
+        "cheerio": "^1.0.0-rc.12",
+        "exceljs": "^4.3.0",
+        "puppeteer": "^21.1.1"
     }
 }

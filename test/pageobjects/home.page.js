@@ -4,7 +4,7 @@ const Utils = require('../utils/utils')
 
 const product = 'camisetas';
 
-class LoginPage extends Page {
+class HomePage extends Page {
 
     // HOME PAGE SELECTORS
 
@@ -24,21 +24,24 @@ class LoginPage extends Page {
         return $('button[type="submit"]')
     }
 
-    get itemContainer() {
-        return $$('.shops__item-title');
+    get productsList() {
+        return $$('div.andes-card.ui-search-result.shops__cardStyles.ui-search-result--core.andes-card--flat.andes-card--padding-16');
     }
 
     get productName() {
-        return $$('.andes-card');
+        return $('.andes-card.ui-search-result');
     }
 
     get productPrice() {
-        return $$('span.andes-money-amount');
+        return $('.andes-money-amount__currency-symbol + .andes-money-amount__fraction');
     }
 
     get productLink() {
-        // return null;
-        return $(`a[title="${this.productName.getValue()}"]`)
+        return $(`.ui-search-link`);
+    }
+
+    get nextPage() {
+        return $('a[title="Siguiente"]');
     }
 
     // HOME PAGE FUNCTIONS
@@ -55,13 +58,45 @@ class LoginPage extends Page {
     }
 
     async collectDataAndCreateExcel() {
-        const data = Utils.dataExtractor(this.itemContainer, this.productName, this.productPrice, this.productLink);
-        await Utils.excelCreator(data);
+        // await $$('.ui-search-layout__item.shops__layout-item').waitForDisplayed({ timeout: 5000 });
+        await this.dataExtractor();
+        // await Utils.excelCreator();
+    }
+
+    async dataExtractor() {
+        const productsJsonArray = [];
+        const products = [];
+        const lista = this.productsList;
+
+        // for(let page=0; page<=3; page++) {
+            for(const element of lista) {
+                await element.waitForDisplayed({ timeout: 5000 });
+
+                const name = element.$(this.productName).getText();
+                const price = element.$(this.productPrice).getText();
+                const link = element.$(this.productLink).getAttribute('href');
+
+                console.log('----------------------------- VALORES ------------------')
+                console.log(name, price, link);
+                console.log('----------------------------- VALORES ------------------')
+
+                products.push({
+                    "name": name,
+                    "price": price,
+                    "link": link
+                });
+            }
+            
+            productsJsonArray.push(...products);
+
+            // if(page<3){
+            //     (await this.nextPage).waitForDisplayed({ timeout: 4000 });
+            //     (await this.nextPage).click(); 
+            // }
+        // }
+        console.log(productsJsonArray);
+        return productsJsonArray;
     }
 }
 
-/**
- * no se esta formando bien el json, no guarda las keys correctamente
- */
-
-module.exports = new LoginPage();
+module.exports = new HomePage();

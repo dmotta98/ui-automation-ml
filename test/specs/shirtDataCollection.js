@@ -3,6 +3,10 @@ const Utils = require('../utils/utils')
 
 describe('Collect "camisetas" data from the first three pages of Mercado Libre', async () => {
 
+    after(async () => {
+        // await browser.deleteSession();
+    })
+
     it('Search for "camisetas" and create excel with collected data', async () => {
         await HomePage.goToMeLiWebsite();
         await HomePage.searchProduct();

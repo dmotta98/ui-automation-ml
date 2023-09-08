@@ -1,8 +1,7 @@
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const fs = require('fs');
-const dataDto = require('../utils/dataProductDTO')
 
-const FILE_NAME = 'productsData.xlsx';
+const FILE_NAME = 'T-shirts_Data-.xlsx';
 
 class Utils {
 
@@ -11,22 +10,18 @@ class Utils {
         await expect(selector).toBeDisplayed();
     }
 
-    async excelCreator(data) {
-        console.log("----------------------------")
-        console.log("EL JSON QUE LLEGA AL EXCEL ES ESTE",data);
-        console.log("----------------------------")
-        
-        const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(data);
+    async excelCreator(items) {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(FILE_NAME);
 
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        worksheet.addRow(['Name', 'Price', 'Link']);
 
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+        for (const item of items) {
+            worksheet.addRow([item.name, item.price, item.link]);
+        }
 
-        // Save the Excel file
-        fs.writeFileSync(FILE_NAME, excelBuffer);
-
-        console.log(`Excel file "${FILE_NAME}" created successfully.`);
+        const filePath = '../reports/'+ FILE_NAME;
+        await workbook.xlsx.writeFile(filePath);
     }
 
     async isFileCreated() {
@@ -37,34 +32,6 @@ class Utils {
         } catch (error) {
             console.log(`El archivo "${FILE_NAME}" no existe en el directorio actual.`);
             return false;
-        }
-    }
-
-
-    async dataExtractor(items, productName, productPrice, productLink) {
-        const productsJsonArray = [];
-        const products = [];
-
-        for(let page=0; page<=3; page++) {
-            for(let i=0; i<items.length; i++){
-                const name = items[i].$(productName).getValue();
-                const price = items[i].$(productPrice).getValue();
-                const link = items[i].$(productLink).getValue();
-
-                return products.push({
-                    "name": name,
-                    "price": price,
-                    "link": link
-                });
-            }
-            
-            productsJsonArray.push(...products);
-
-            if(page<3){
-            /**
-             * next de pagina
-             */
-            }
         }
     }
 
