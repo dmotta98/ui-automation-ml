@@ -1,7 +1,4 @@
-const ExcelJS = require('exceljs');
 const fs = require('fs');
-
-const FILE_NAME = 'T-shirts_Data-.xlsx';
 
 class Utils {
 
@@ -10,29 +7,20 @@ class Utils {
         await expect(selector).toBeDisplayed();
     }
 
-    async excelCreator(items) {
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet(FILE_NAME);
+    async createFile(collectedData) {
+        const date = new Date(Date.now()).toISOString();
+        const csvContent = 'Name,Price,Link\n' + collectedData.map(item => Object.values(item).join(',')).join('\n');
 
-        worksheet.addRow(['Name', 'Price', 'Link']);
+        fs.writeFile(`./scraped_items-${date}.csv`, csvContent, 'utf8', (err) => {
+            if (err) {
+                console.error('An error occurred while writing the file:', err);
+                return;
+            }
 
-        for (const item of items) {
-            worksheet.addRow([item.name, item.price, item.link]);
-        }
+            console.log('The file was saved!');
+        });
 
-        const filePath = '../reports/'+ FILE_NAME;
-        await workbook.xlsx.writeFile(filePath);
-    }
-
-    async isFileCreated() {
-        try {
-            fs.accessSync(FILE_NAME);
-            console.log(`El archivo "${FILE_NAME}" existe en el directorio actual.`);
-            return true;
-        } catch (error) {
-            console.log(`El archivo "${FILE_NAME}" no existe en el directorio actual.`);
-            return false;
-        }
+        console.log('Scraped Items:', collectedData);
     }
 
 }
