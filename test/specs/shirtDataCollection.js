@@ -1,12 +1,14 @@
 const HomePage = require('../pageobjects/home.page');
-const Utils = require('../utils/utils')
 
-describe('Collect "camisetas" data from the first three pages of Mercado Libre', async () => {
+describe('Mercado Libre Scraper', () => {
 
-    it('Search for "camisetas" and create excel with collected data', async () => {
+    before(async () => {
+        await browser.maximizeWindow();
+    });
+
+    it('should scrape the first three pages of search results', async () => {
         await HomePage.goToMeLiWebsite();
         await HomePage.searchProduct();
-        await HomePage.collectDataAndCreateExcel();
-        // await expect(Utils.isFileCreated).toBeTrue();
+        await HomePage.scrapItems();
     });
-})
+});

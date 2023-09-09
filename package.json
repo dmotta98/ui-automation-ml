@@ -16,6 +16,6 @@
         "wdio": "wdio run wdio.conf.js"
     },
     "dependencies": {
-        "xlsx": "^0.18.5"
+        "csv-writer": "^1.6.0"
     }
 }

@@ -2,66 +2,53 @@ const { $ } = require('@wdio/globals')
 const Page = require('./page');
 const Utils = require('../utils/utils')
 
-const product = 'camisetas';
 
-class LoginPage extends Page {
+class HomePage extends Page {
+    product = 'camisetas';
+    numPages = 3;
 
-    // HOME PAGE SELECTORS
+    get searchInput() { return $('input.nav-search-input'); }
+    get searchButton() { return $('button.nav-search-btn'); }
+    get items() { return $$('li.shops__layout-item'); }
+    get nextPage() { return $('a[title="Siguiente"]'); }
 
-    get searchBar() {
-        return $('.nav-search-input#cb1-edit');
-    }
+    async getItemName(item) { return item.$('.ui-search-item__title').getText(); }
+    async getItemPrice(item) { return item.$('.andes-money-amount__fraction').getText(); }
+    async getItemLink(item) { return item.$('a.ui-search-link').getAttribute('href'); }
 
-    get header() {
-        return $('[role="banner"]');
-    }
-
-    get searchTitle() {
-        return $(`h1=${product}`)
-    }
-
-    get searchBtn() {
-        return $('button[type="submit"]')
-    }
-
-    get itemContainer() {
-        return $$('.shops__item-title');
-    }
-
-    get productName() {
-        return $$('.andes-card');
-    }
-
-    get productPrice() {
-        return $$('span.andes-money-amount');
-    }
-
-    get productLink() {
-        // return null;
-        return $(`a[title="${this.productName.getValue()}"]`)
-    }
-
-    // HOME PAGE FUNCTIONS
     async goToMeLiWebsite() {
         await this.open();
-        await Utils.elementExists(this.header);
     }
 
-    async searchProduct() {
-        await Utils.elementExists(this.searchBar);
-        await this.searchBar.setValue(product);
-        (await this.searchBtn).click();
-        (await this.searchTitle).waitForDisplayed({ timeout: 5000 });
+    async searchProduct(){
+        await this.searchInput.setValue(this.product);
+        await this.searchButton.click();
     }
 
-    async collectDataAndCreateExcel() {
-        const data = Utils.dataExtractor(this.itemContainer, this.productName, this.productPrice, this.productLink);
-        await Utils.excelCreator(data);
+    async goToNextPage() {
+        await this.nextPage.scrollIntoView();
+        await this.nextPage.waitForDisplayed({ timeout: 4000 });
+        await this.nextPage.click();
     }
+
+    async scrapItems() {
+        const scrapedItems = [];
+        for (let page = 1; page <= this.numPages; page++) {
+            const items = await this.items;
+            for (const item of items) {
+                const product = await this.getItemName(item);
+                const price = await this.getItemPrice(item);
+                const link = await this.getItemLink(item);
+                scrapedItems.push({ product, price, link });
+            }
+
+            if (page < 3) {
+                await this.goToNextPage();
+            }
+        }
+        await Utils.createFile(scrapedItems);
+    }
+
 }
 
-/**
- * no se esta formando bien el json, no guarda las keys correctamente
- */
-
-module.exports = new LoginPage();
+module.exports = new HomePage();
